@@ -3,7 +3,7 @@
 namespace Fervo\AdvisoryLocker;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 
 /**
@@ -18,7 +18,7 @@ class AdvisoryLockerFactory
         switch (true) {
             case $platform instanceof PostgreSqlPlatform:
                 return new PostgresAdvisoryLocker($conn);
-            case $platform instanceof MySQLPlatform:
+            case $platform instanceof MySqlPlatform:
                 return new MysqlAdvisoryLocker($conn);
             default:
                 throw new Exception\PlatformNotSupportedException();
