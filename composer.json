@@ -1,0 +1,18 @@
+{
+    "name": "fervo/advisory-locker",
+    "description": "A library to get advisory locks on your Doctrine database",
+    "license": "MIT",
+    "type": "library",
+    "autoload": {
+        "psr-4": { "Fervo\\AdvisoryLocker\\": ""}
+    },
+    "require": {
+        "php": "~7.0",
+        "doctrine/dbal": "~2.5"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
