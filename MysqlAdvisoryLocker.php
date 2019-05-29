@@ -25,7 +25,7 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
 
     public function doAcquireLock(string $name, int $wait)
     {
-        $quotedName = $this->conn->quote($name, \PDO::PARAM_STR);
+        $quotedName = $this->lockName($name);
         $rs = $this->conn->query("SELECT GET_LOCK($quotedName, $wait);");
 
         if ($rs->fetchColumn(0) !== '1') {
@@ -33,9 +33,20 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
         }
     }
 
+    private function lockName(string $name)
+    {
+        $newName = $this->conn->getDatabase().'-'.$this->conn->quote($name, \PDO::PARAM_STR);
+
+        if (strlen($newName) > 64) {
+            $newName = crc32($newName);
+        }
+
+        return $newName;
+    }
+
     public function release(string $name)
     {
-        $quotedName = $this->conn->quote($name, \PDO::PARAM_STR);
+        $quotedName = $this->lockName($name);
         $rs = $this->conn->query("SELECT RELEASE_LOCK($quotedName);");
 
         if ($rs->fetchColumn(0) !== '1') {

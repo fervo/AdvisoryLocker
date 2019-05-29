@@ -40,6 +40,6 @@ class PostgresAdvisoryLocker implements AdvisoryLockerInterface
 
     protected function createKey(string $name): int
     {
-        return crc32($name);
+        return crc32($this->conn->getDatabase().'-'.$name);
     }
 }
