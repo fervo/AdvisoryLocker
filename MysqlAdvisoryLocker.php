@@ -12,10 +12,12 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
     use PerformTrait;
 
     protected $conn;
+    protected $databaseScope;
 
-    public function __construct(Connection $conn)
+    public function __construct(Connection $conn, bool $databaseScope = false)
     {
         $this->conn = $conn;
+        $this->databaseScope = $databaseScope;
     }
 
     public function acquire(string $name)
@@ -25,7 +27,7 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
 
     public function doAcquireLock(string $name, int $wait)
     {
-        $quotedName = $this->conn->quote($name, \PDO::PARAM_STR);
+        $quotedName = $this->lockName($name);
         $rs = $this->conn->query("SELECT GET_LOCK($quotedName, $wait);");
 
         if ($rs->fetchColumn(0) !== '1') {
@@ -35,7 +37,7 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
 
     public function release(string $name)
     {
-        $quotedName = $this->conn->quote($name, \PDO::PARAM_STR);
+        $quotedName = $this->lockName($name);
         $rs = $this->conn->query("SELECT RELEASE_LOCK($quotedName);");
 
         if ($rs->fetchColumn(0) !== '1') {
@@ -54,5 +56,22 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
         } finally {
             $this->release($name);
         }
+    }
+
+    private function lockName(string $name)
+    {
+        $newName = $name;
+
+        if ($this->databaseScope) {
+            $newName = $this->conn->getDatabase().'-'.$newName;
+        }
+
+        $newName = $this->conn->quote($newName, \PDO::PARAM_STR);
+
+        if (strlen($newName) > 64) {
+            $newName = crc32($newName);
+        }
+
+        return $newName;
     }
 }
