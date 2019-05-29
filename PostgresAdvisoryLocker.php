@@ -12,10 +12,12 @@ class PostgresAdvisoryLocker implements AdvisoryLockerInterface
     use PerformTrait;
 
     protected $conn;
+    protected $databaseScope;
 
-    public function __construct(Connection $conn)
+    public function __construct(Connection $conn, bool $databaseScope = false)
     {
         $this->conn = $conn;
+        $this->databaseScope = $databaseScope;
     }
 
     public function acquire(string $name)
@@ -40,6 +42,12 @@ class PostgresAdvisoryLocker implements AdvisoryLockerInterface
 
     protected function createKey(string $name): int
     {
-        return crc32($this->conn->getDatabase().'-'.$name);
+        if ($this->databaseScope) {
+            $fullName = $this->conn->getDatabase().'-'.$name;
+        } else {
+            $fullName = $name;
+        }
+
+        return crc32($fullName);
     }
 }
