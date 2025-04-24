@@ -30,7 +30,7 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
         $quotedName = $this->lockName($name);
         $rs = $this->conn->query("SELECT GET_LOCK($quotedName, $wait);");
 
-        if ($rs->fetchColumn(0) !== '1') {
+        if ((int) $rs->fetchColumn(0) !== 1) {
             throw new Exception\AcquireFailedException();
         }
     }
@@ -40,7 +40,7 @@ class MysqlAdvisoryLocker implements AdvisoryLockerInterface
         $quotedName = $this->lockName($name);
         $rs = $this->conn->query("SELECT RELEASE_LOCK($quotedName);");
 
-        if ($rs->fetchColumn(0) !== '1') {
+        if ((int) $rs->fetchColumn(0) !== 1) {
             throw new Exception\ReleaseFailedException();
         }
     }
